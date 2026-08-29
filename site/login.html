@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yapa</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000'/%3E%3Cpath d='M28 24 L50 50 L72 24' stroke='%23fff' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M50 50 L50 78' stroke='%23fff' stroke-width='9' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #0a0a0a;
+    --bg-raised: #111110;
+    --bg-card: #0e0e0d;
+    --bg-field: #141412;
+    --border: #232320;
+    --border-soft: #1a1a17;
+    --fg: #faf9f4;
+    --fg-dim: #8c8c85;
+    --fg-faint: #55554f;
+    --online: #7CFA85;
+    --error: #FF8A7A;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    font-family: 'Inter', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  h1, h2, .display { font-family: 'Space Grotesk', sans-serif; }
+  .mono{ font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.02em; }
+
+  a{ color: inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ---------- LOGO ---------- */
+  .logo-mark{
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: #000;
+    border: 1px solid #2b2b27;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-mark svg{ width: 60%; height: 60%; }
+  .top-logo{
+    position: absolute;
+    top: 28px; left: 7%;
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+    z-index: 5;
+  }
+  .top-logo .wordmark{ font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+
+  /* ---------- LAYOUT ---------- */
+  .page{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+
+  /* LEFT — brand panel */
+  .panel-left{
+    position: relative;
+    padding: 100px 60px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 20% 15%, #141412 0%, transparent 45%),
+      radial-gradient(circle at 85% 85%, #121210 0%, transparent 45%),
+      #050505;
+    border-right: 1px solid var(--border-soft);
+  }
+
+  .panel-left .claim{
+    max-width: 420px;
+  }
+  .panel-left h1{
+    font-size: clamp(32px, 3.4vw, 44px);
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    margin-bottom: 18px;
+  }
+  .panel-left h1 span{ color: var(--fg-dim); }
+  .panel-left p{
+    color: var(--fg-dim);
+    font-size: 16px;
+    max-width: 380px;
+  }
+
+  .mini-chat{
+    margin-top: 48px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    max-width: 360px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .mini-chat-head{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .avatar{
+    width: 30px; height: 30px; border-radius: 50%;
+    background: #1c1c19; border: 1px solid var(--border);
+    position: relative; flex-shrink: 0;
+  }
+  .avatar::after{
+    content:''; position:absolute; bottom:-1px; right:-1px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--online); border: 2px solid var(--bg-card);
+  }
+  .mini-chat-head .name{ font-size: 13px; font-weight: 600; }
+  .mini-chat-head .status{ font-size: 10.5px; color: var(--online); }
+
+  .mini-bubble{
+    font-size: 13px;
+    padding: 9px 12px;
+    border-radius: 14px;
+    max-width: 82%;
+    margin-bottom: 8px;
+  }
+  .mini-bubble.in{ background:#1a1a17; border:1px solid var(--border-soft); border-bottom-left-radius:4px; }
+  .mini-bubble.out{ background: var(--fg); color:#000; border-bottom-right-radius:4px; margin-left:auto; }
+
+  /* RIGHT — form panel */
+  .panel-right{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 40px 60px;
+    position: relative;
+  }
+
+  .auth-card{
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .tabs{
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 32px;
+    background: var(--bg-card);
+  }
+  .tab{
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    color: var(--fg-dim);
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+  .tab.active{ background: var(--fg); color: #000; }
+  .tab:not(.active):hover{ color: var(--fg); }
+
+  .auth-card h2{
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .auth-card .sub{
+    color: var(--fg-dim);
+    font-size: 14.5px;
+    margin-bottom: 30px;
+  }
+
+  form{ display: none; }
+  form.active{ display: flex; flex-direction: column; gap: 18px; }
+
+  .field-group{ display: flex; flex-direction: column; gap: 7px; }
+  .field-group label{
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+  .field-group input{
+    background: var(--bg-field);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 13px 14px;
+    color: var(--fg);
+    font-size: 14.5px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .field-group input::placeholder{ color: var(--fg-faint); }
+  .field-group input:focus{ border-color: #4a4a44; outline: none; }
+  .field-group input:focus-visible{ outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  .field-hint{ font-size: 12px; color: var(--fg-faint); margin-top: -4px; }
+
+  .row-between{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--fg-dim);
+  }
+  .row-between a{ text-decoration: none; color: var(--fg-dim); transition: color 0.2s; }
+  .row-between a:hover{ color: var(--fg); }
+
+  .checkbox-row{
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    color: var(--fg-dim);
+  }
+  .checkbox-row input[type="checkbox"]{
+    width: 16px; height: 16px;
+    accent-color: var(--fg);
+  }
+
+  .submit-btn{
+    margin-top: 6px;
+    padding: 14px 0;
+    background: var(--fg);
+    color: #000;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: 0.22s;
+  }
+  .submit-btn:hover{ transform: translateY(-2px); box-shadow: 0 12px 26px rgba(250,249,244,0.12); }
+
+  .divider{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--fg-faint);
+    font-size: 12px;
+    margin: 26px 0 18px;
+  }
+  .divider::before, .divider::after{
+    content:'';
+    flex: 1;
+    height: 1px;
+    background: var(--border-soft);
+  }
+
+  .oauth-row{ display: flex; flex-direction: column; gap: 10px; }
+  .oauth-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 0;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg-card);
+    color: var(--fg);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: 0.2s;
+  }
+  .oauth-btn:hover{ background: var(--bg-raised); }
+  .oauth-btn svg{ width: 18px; height: 18px; }
+
+  .switch-line{
+    text-align: center;
+    margin-top: 28px;
+    font-size: 13.5px;
+    color: var(--fg-dim);
+  }
+  .switch-line button{
+    background: none;
+    border: none;
+    color: var(--fg);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .error-msg{
+    display: none;
+    font-size: 12.5px;
+    color: var(--error);
+    margin-top: -4px;
+  }
+  .error-msg.show{ display: block; }
+  .field-group.error input{ border-color: var(--error); }
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width: 900px){
+    .page{ grid-template-columns: 1fr; }
+    .panel-left{
+      border-right: none;
+      border-bottom: 1px solid var(--border-soft);
+      padding: 90px 24px 50px;
+      min-height: 320px;
+    }
+    .mini-chat{ display: none; }
+    .top-logo{ left: 24px; }
+    .panel-right{ padding: 60px 24px 70px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="top-logo" href="index.html">
+  <div class="logo-mark">
+    <svg viewBox="0 0 100 100" fill="none">
+      <path d="M28 24 L50 50 L72 24" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M50 50 L50 78" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <span class="wordmark">Yapa</span>
+</a>
+
+<div class="page">
+
+  <!-- LEFT: brand panel -->
+  <div class="panel-left">
+    <div class="claim">
+      <h1>Your people are<br><span>already here.</span></h1>
+      <p>Log in to pick up where you left off, or create an account in seconds — no clutter, just conversation.</p>
+
+      <div class="mini-chat">
+        <div class="mini-chat-head">
+          <div class="avatar"></div>
+          <div>
+            <div class="name">Maya</div>
+            <div class="status">online</div>
+          </div>
+        </div>
+        <div class="mini-bubble in">welcome back 👋</div>
+        <div class="mini-bubble out">good to be here</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: auth form -->
+  <div class="panel-right">
+    <div class="auth-card">
+
+      <div class="tabs" role="tablist" aria-label="Choose login or signup">
+        <button class="tab active" id="tabLogin" role="tab" aria-selected="true" aria-controls="loginForm">Log in</button>
+        <button class="tab" id="tabSignup" role="tab" aria-selected="false" aria-controls="signupForm">Sign up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginPane">
+        <h2>Welcome back</h2>
+        <p class="sub">Log in to keep the conversation going.</p>
+
+        <form id="loginForm" class="active" novalidate>
+            <div class="field-group" id="loginUserGroup">
+              <label for="loginUser">Username</label>
+              <input type="text" id="loginUser" placeholder="your-username" autocomplete="username" required>
+              <span class="error-msg">Enter your username.</span>
+            </div>
+
+            <div class="field-group" id="loginPassGroup">
+              <label for="loginPass">Password</label>
+              <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" required>
+              <span class="error-msg">Enter your password.</span>
+            </div>
+
+          <div class="row-between">
+            <label class="checkbox-row">
+              <input type="checkbox"> Stay signed in
+            </label>
+            <a href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="submit-btn">Log in</button>
+        </form>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signupPane" style="display:none;">
+        <h2>Create your account</h2>
+        <p class="sub">Takes less than a minute.</p>
+
+        <form id="signupForm" novalidate>
+          <div class="field-group" id="signupEmailGroup">
+            <label for="signupEmail">Email (optional)</label>
+            <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+            <span class="error-msg">Enter a valid email address.</span>
+          </div>
+
+          <div class="field-group" id="signupUserGroup">
+            <label for="signupUser">Username</label>
+            <input type="text" id="signupUser" placeholder="your-username" autocomplete="username" required>
+            <span class="error-msg">Enter a username.</span>
+          </div>
+
+          <div class="field-group" id="signupPassGroup">
+            <label for="signupPass">Password</label>
+            <input type="password" id="signupPass" placeholder="At least 8 characters" autocomplete="new-password" required minlength="8">
+            <span class="field-hint">Use 8+ characters — mix letters and numbers for a stronger password.</span>
+            <span class="error-msg">Password must be at least 8 characters.</span>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" required> I agree to the Terms and Privacy Policy
+          </label>
+
+          <button type="submit" class="submit-btn">Create account</button>
+        </form>
+      </div>
+
+      
+
+      <p class="switch-line" id="switchLine">
+        Don't have an account? <button type="button" id="switchToSignup">Sign up</button>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function(){
+    var tabLogin = document.getElementById('tabLogin');
+    var tabSignup = document.getElementById('tabSignup');
+    var loginPane = document.getElementById('loginPane');
+    var signupPane = document.getElementById('signupPane');
+    var loginForm = document.getElementById('loginForm');
+    var signupForm = document.getElementById('signupForm');
+    var switchLine = document.getElementById('switchLine');
+
+    function showLogin(){
+      tabLogin.classList.add('active'); tabLogin.setAttribute('aria-selected','true');
+      tabSignup.classList.remove('active'); tabSignup.setAttribute('aria-selected','false');
+      loginPane.style.display = ''; signupPane.style.display = 'none';
+      loginForm.classList.add('active'); signupForm.classList.remove('active');
+      switchLine.innerHTML = 'Don\'t have an account? <button type="button" id="switchToSignup">Sign up</button>';
+      document.getElementById('switchToSignup').addEventListener('click', showSignup);
+    }
+
+    function showSignup(){
+      tabSignup.classList.add('active'); tabSignup.setAttribute('aria-selected','true');
+      tabLogin.classList.remove('active'); tabLogin.setAttribute('aria-selected','false');
+      signupPane.style.display = ''; loginPane.style.display = 'none';
+      signupForm.classList.add('active'); loginForm.classList.remove('active');
+      switchLine.innerHTML = 'Already have an account? <button type="button" id="switchToLogin">Log in</button>';
+      document.getElementById('switchToLogin').addEventListener('click', showLogin);
+    }
+
+    tabLogin.addEventListener('click', showLogin);
+    tabSignup.addEventListener('click', showSignup);
+    document.getElementById('switchToSignup').addEventListener('click', showSignup);
+
+    // Try to pre-fill username by IP-bound remembered account
+    try {
+      fetch('/api/remember').then(function(res){ return res.json(); }).then(function(data){
+        if (data && data.success && data.username) {
+          document.getElementById('loginUser').value = data.username;
+          document.getElementById('loginPass').focus();
+        }
+      }).catch(function(){});
+    } catch(e){}
+
+    function validateField(input, group){
+      var valid = input.checkValidity();
+      group.classList.toggle('error', !valid);
+      return valid;
+    }
+
+    loginForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var userInput = document.getElementById('loginUser');
+      var passInput = document.getElementById('loginPass');
+      var okUser = validateField(userInput, document.getElementById('loginUserGroup'));
+      var okPass = validateField(passInput, document.getElementById('loginPassGroup'));
+      var msgs = document.querySelectorAll('#loginForm .error-msg');
+      msgs[0].classList.toggle('show', !okUser);
+      msgs[1].classList.toggle('show', !okPass);
+      if (okUser && okPass) {
+        fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: userInput.value, password: passInput.value })
+        }).then(function(res){ return res.json(); })
+        .then(function(data){
+            if (data && data.success) {
+            try { sessionStorage.setItem('yapa_username', data.username || userInput.value); } catch(e){}
+            window.location.href = '/chat.html';
+          } else {
+            alert((data && data.message) || 'Login failed');
+          }
+        }).catch(function(){ alert('Network error'); });
+      }
+    });
+
+    signupForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var emailInput = document.getElementById('signupEmail');
+      var userInput = document.getElementById('signupUser');
+      var passInput = document.getElementById('signupPass');
+      var okEmail = true;
+      if (emailInput.value) okEmail = validateField(emailInput, document.getElementById('signupEmailGroup'));
+      var okUser = validateField(userInput, document.getElementById('signupUserGroup'));
+      var okPass = validateField(passInput, document.getElementById('signupPassGroup'));
+      var msgs = document.querySelectorAll('#signupForm .error-msg');
+      msgs[0].classList.toggle('show', !okEmail && emailInput.value);
+      msgs[1].classList.toggle('show', !okUser);
+      msgs[2].classList.toggle('show', !okPass);
+      if (okUser && okPass && okEmail) {
+        fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput.value, username: userInput.value, password: passInput.value })
+        }).then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data && data.success) {
+            try { sessionStorage.setItem('yapa_username', data.username || userInput.value); } catch(e){}
+            window.location.href = '/chat.html';
+          } else {
+            alert((data && data.message) || 'Signup failed');
+          }
+        }).catch(function(){ alert('Network error'); });
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
