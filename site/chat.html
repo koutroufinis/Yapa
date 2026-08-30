@@ -203,15 +203,195 @@
     padding: 14px;
     border-bottom: 1px solid var(--border-soft);
   }
+  .find-row{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
   .sidebar-search input{
-    width: 100%;
+    flex: 1;
     background: var(--bg-field);
     border: 1px solid var(--border);
     border-radius: 9px;
     padding: 10px 12px;
     font-size: 13.5px;
+    min-width: 0;
   }
   .sidebar-search input::placeholder{ color: var(--fg-faint); }
+  .find-btn{
+    border: 1px solid var(--border);
+    background: var(--fg);
+    color: #000;
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .team-section{
+    border-top: 1px solid var(--border-soft);
+    padding: 12px 12px 8px;
+    background: rgba(255,255,255,0.01);
+  }
+
+  .team-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .team-label{
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .team-add-btn{
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    color: var(--fg);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .team-editor{
+    background: var(--bg-field);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .team-avatar-edit{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .team-avatar-edit .avatar{ width: 42px; height: 42px; font-size: 12px; }
+  .team-avatar-edit .upload-btn{
+    font-size: 12px;
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    border-radius: 8px;
+    color: var(--fg-dim);
+    display: inline-block;
+    cursor: pointer;
+    transition: 0.18s;
+  }
+  .team-avatar-edit .upload-btn:hover{ color: var(--fg); background: var(--bg-raised); }
+  .team-avatar-edit input[type="file"]{ position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .team-editor .field-group.compact{ gap: 5px; }
+  .team-member-controls{
+    display: flex;
+    gap: 8px;
+  }
+  .team-member-controls input{
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+  .team-member-controls button,
+  .team-actions button{
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--fg);
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .team-member-list{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 24px;
+  }
+  .team-member-tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--fg-dim);
+  }
+  .team-member-tag button{
+    border: none;
+    background: transparent;
+    color: var(--fg-dim);
+    padding: 0;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .team-actions{
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .team-toolbar{
+    border-bottom: 1px solid var(--border-soft);
+    padding: 10px 16px 12px;
+    background: rgba(255,255,255,0.01);
+  }
+  .team-toolbar.hidden{ display: none; }
+  .team-member-inline{ display: flex; gap: 8px; }
+  .team-member-inline input{
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-field);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .team-member-inline button{
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--fg);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .team-delete-btn{
+    border: 1px solid var(--error) !important;
+    color: var(--error) !important;
+    background: rgba(255,138,122,0.05) !important;
+  }
+  .team-item{
+    margin-bottom: 6px;
+  }
+  .team-btn{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    background: none;
+    border: none;
+    border-radius: 11px;
+    text-align: left;
+    transition: 0.15s;
+  }
+  .team-btn:hover{ background: var(--bg-hover); }
+  .team-btn[aria-current="true"]{ background: var(--bg-raised); }
+  .team-meta{ flex: 1; min-width: 0; }
+  .team-name{ font-size: 13.5px; font-weight: 600; display: block; }
+  .team-sub{ font-size: 11.5px; color: var(--fg-dim); display: block; margin-top: 2px; }
+  .team-empty{ color: var(--fg-faint); font-size: 12px; padding: 8px 2px; }
 
   .contact-list{
     list-style: none;
@@ -257,6 +437,14 @@
     padding: 0 5px;
   }
 
+  .verified-icon{
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 3px;
+  }
+  .verified-icon svg{ width: 14px; height: 14px; display: block; }
+
   .empty-contacts{
     padding: 30px 20px;
     text-align: center;
@@ -289,19 +477,6 @@
   .chat-header .who .status{ font-size: 11.5px; color: var(--fg-dim); }
   .chat-header .who .status.online{ color: var(--online); }
 
-  .no-conversation{
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 10px;
-    color: var(--fg-faint);
-    text-align: center;
-    padding: 40px;
-  }
-  .no-conversation .logo-mark{ width: 48px; height: 48px; border-radius: 12px; margin-bottom: 6px; }
-
   .messages{
     flex: 1;
     overflow-y: auto;
@@ -309,6 +484,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-height: 0;
   }
 
   .date-divider{
@@ -638,7 +814,7 @@
       <button class="icon-btn hamburger" id="hamburgerBtn" aria-label="Show contacts" aria-expanded="false" aria-controls="sidebar">
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
-      <a class="brand" href="index.html">
+      <a class="brand" href="website.html">
         <div class="logo-mark">
           <svg viewBox="0 0 100 100" fill="none">
             <path d="M28 24 L50 50 L72 24" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
@@ -666,9 +842,13 @@
     <!-- CONTACTS SIDEBAR -->
     <nav class="sidebar" id="sidebar" aria-label="Contacts">
       <div class="sidebar-search">
-        <label for="contactSearch" class="sr-only">Search contacts</label>
-        <input type="text" id="contactSearch" placeholder="Search contacts…" autocomplete="off">
+        <div class="find-row">
+          <label for="contactSearch" class="sr-only">Search contacts</label>
+          <input type="text" id="contactSearch" placeholder="Search contacts…" autocomplete="off">
+          <button type="button" class="find-btn" id="findUserBtn" style="background: var(--bg-card); border: 1px solid var(--border);">🔍︎</button>
+        </div>
       </div>
+
       <ul class="contact-list" id="contactList" role="list" aria-label="Conversations"></ul>
     </nav>
 
@@ -684,16 +864,6 @@
           <span class="name" id="chatContactName"></span>
           <span class="status mono" id="chatContactStatus"></span>
         </div>
-      </div>
-
-      <div class="no-conversation" id="noConversation">
-        <div class="logo-mark">
-          <svg viewBox="0 0 100 100" fill="none">
-            <path d="M28 24 L50 50 L72 24" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M50 50 L50 78" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <p>Select a conversation to start chatting.</p>
       </div>
 
       <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Conversation" hidden></div>
@@ -804,15 +974,49 @@
      ================================================================ */
   var state = {
     contacts: [],
+    teams: [],
     messagesByContact: {},   // { contactId: [messages] }
     activeContactId: null,
     profile: null,
     typingContactId: null
   };
 
+  // Module-level typing flag. Must live out here (not inside init()) because
+  // stopTyping() is also defined at this scope and needs to read/write it —
+  // previously it was declared with `var` inside init(), so stopTyping()'s
+  // assignment threw a ReferenceError under "use strict" any time a message
+  // was sent (it silently aborted the .then() chain after sending).
+  var isTyping = false;
+
+  var AUTH_TOKEN = (function(){ try { return localStorage.getItem('yapa_auth_token') || ''; } catch(e){ return ''; } })();
   var CURRENT_USER = (function(){ try { return sessionStorage.getItem('yapa_username'); } catch(e){ return null; } })();
-  if (!CURRENT_USER) {
-    // If there's no logged-in user, redirect to login page.
+
+  function clearAuthSession(){
+    try {
+      localStorage.removeItem('yapa_auth_token');
+      sessionStorage.clear();
+      Object.keys(localStorage).forEach(function(key){ if (key.indexOf('yapa_') === 0) localStorage.removeItem(key); });
+    } catch (e) {}
+  }
+
+  if (!CURRENT_USER && AUTH_TOKEN) {
+    fetchWithTimeout(apiUrl('/api/remember'), {
+      headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
+    }).then(function(res){ return res.json(); }).then(function(data){
+      if (data && data.success && data.username) {
+        CURRENT_USER = data.username;
+        try { sessionStorage.setItem('yapa_username', CURRENT_USER); } catch(e){}
+      } else {
+        clearAuthSession();
+        window.location.href = CONFIG.LOGIN_URL;
+      }
+    }).catch(function(){
+      clearAuthSession();
+      window.location.href = CONFIG.LOGIN_URL;
+    });
+  }
+
+  if (!CURRENT_USER && !AUTH_TOKEN) {
     window.location.href = CONFIG.LOGIN_URL;
   }
 
@@ -822,9 +1026,9 @@
   var $ = function(id){ return document.getElementById(id); };
 
   var sidebar = $("sidebar"), sidebarScrim = $("sidebarScrim"), hamburgerBtn = $("hamburgerBtn");
-  var contactList = $("contactList"), contactSearch = $("contactSearch");
+  var contactList = $("contactList"), contactSearch = $("contactSearch"), findUserBtn = $("findUserBtn");
   var chatHeader = $("chatHeader"), chatAvatar = $("chatAvatar"), chatContactName = $("chatContactName"), chatContactStatus = $("chatContactStatus");
-  var noConversation = $("noConversation"), messagesEl = $("messages");
+  var messagesEl = $("messages");
   var composer = $("composer"), messageInput = $("messageInput"), sendBtn = $("sendBtn");
   var backBtn = $("backBtn");
   var headerUserName = $("headerUserName"), headerAvatar = $("headerAvatar");
@@ -862,6 +1066,11 @@
 
   function fetchWithTimeout(url, opts){
     opts = opts || {};
+    var token = AUTH_TOKEN || ((function(){ try { return localStorage.getItem('yapa_auth_token') || ''; } catch(e){ return ''; } })());
+    opts.headers = Object.assign({}, opts.headers || {});
+    if (token && !opts.headers.Authorization) {
+      opts.headers.Authorization = 'Bearer ' + token;
+    }
     var controller = ("AbortController" in window) ? new AbortController() : null;
     if (controller) opts.signal = controller.signal;
     var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, CONFIG.FETCH_TIMEOUT_MS) : null;
@@ -932,6 +1141,58 @@
     } catch (e) {}
   }
 
+  function normalizeTeamMemberHandle(memberName){
+    if (!memberName) return '';
+    var value = String(memberName).trim();
+    if (!value) return '';
+    if (value.charAt(0) === '@') value = value.slice(1).trim();
+    return value;
+  }
+
+  function teamIncludesCurrentUser(team){
+    if (!team || !CURRENT_USER) return false;
+    var members = Array.isArray(team.members) ? team.members : [];
+    var current = normalizeTeamMemberHandle(CURRENT_USER).toLowerCase();
+    if (team.owner && normalizeTeamMemberHandle(team.owner).toLowerCase() === current) return true;
+    return members.some(function(member){
+      return normalizeTeamMemberHandle(member).toLowerCase() === current;
+    });
+  }
+
+  function loadTeams(){
+    try {
+      var raw = localStorage.getItem('yapa_teams');
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveTeams(){
+    try {
+      localStorage.setItem('yapa_teams', JSON.stringify(state.teams));
+    } catch (e) {}
+  }
+
+  function lsGetTeamMessages(teamId){
+    try {
+      var raw = localStorage.getItem('yapa_team_messages_' + teamId);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function lsSetTeamMessages(teamId, msgs){
+    try {
+      localStorage.setItem('yapa_team_messages_' + teamId, JSON.stringify(msgs));
+    } catch (e) {}
+  }
+
   function lsGetProfile(){
     var raw = localStorage.getItem(LS_KEYS.profile);
     var fallback = { username: CURRENT_USER || "", email: "", avatarBase64: "" };
@@ -998,13 +1259,24 @@
   }
 
   function searchUsers(q){
-    return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.usersSearch) + "?q=" + encodeURIComponent(q))
+    return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.usersSearch) + "?q=" + encodeURIComponent(q) + "&currentUser=" + encodeURIComponent(CURRENT_USER || ''))
       .then(function(res){ if (!res.ok) throw new Error('bad'); return res.json(); })
       .then(function(data){ if (data && Array.isArray(data.users)) return data.users; throw new Error('bad shape'); })
       .catch(function(){ return []; });
   }
 
+  function addContactByUsername(username){
+    return fetchWithTimeout(apiUrl('/api/contacts/add'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: CURRENT_USER, contact: username })
+    }).then(function(res){ if (!res.ok) throw new Error('bad'); return res.json(); });
+  }
+
   function loadMessages(contactId){
+    if (contactId && String(contactId).indexOf('team:') === 0) {
+      return Promise.resolve(lsGetTeamMessages(contactId));
+    }
     return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.messages) + "?contactId=" + encodeURIComponent(contactId) + "&username=" + encodeURIComponent(CURRENT_USER))
       .then(function(res){
         if (!res.ok) throw new Error("bad status " + res.status);
@@ -1029,6 +1301,29 @@
   }
 
   function sendMessage(contactId, contactName, text){
+    if (contactId && String(contactId).indexOf('team:') === 0) {
+      var teamId = contactId;
+      var team = state.teams.find(function(item){ return item.id === teamId; });
+      var localMsg = {
+        id: 'team-' + Date.now(),
+        from: CURRENT_USER,
+        to: teamId,
+        text: text,
+        isoTime: new Date().toISOString()
+      };
+      var msgs = lsGetTeamMessages(teamId);
+      msgs.push(localMsg);
+      lsSetTeamMessages(teamId, msgs);
+      state.messagesByContact[teamId] = msgs;
+      if (team) {
+        team.lastMessage = text;
+        team.lastTime = localMsg.isoTime;
+        saveTeams();
+      }
+      renderTeams();
+      return Promise.resolve(localMsg);
+    }
+
     var body = { from: CURRENT_USER, to: contactId, text: text };
     return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.messages), {
       method: "POST",
@@ -1091,11 +1386,15 @@
   /* ================================================================
      RENDER: CONTACTS
      ================================================================ */
+  function renderTeams(){
+    return;
+  }
+
   function renderContacts(filterText){
     var list = state.contacts.slice();
     if (filterText) {
       var f = filterText.toLowerCase();
-      list = list.filter(function(c){ return c.name.toLowerCase().indexOf(f) !== -1; });
+      list = list.filter(function(c){ return (c.name || "").toLowerCase().indexOf(f) !== -1; });
     }
     list.sort(function(a,b){ return new Date(b.lastTime) - new Date(a.lastTime); });
 
@@ -1132,8 +1431,16 @@
 
       var meta = document.createElement("div");
       meta.className = "contact-meta";
-      var nameHtml = '<span class="contact-name">' + escapeHtml(c.name) + ((c.verified && c.id !== 'koutroufinis') ? ' <span class="verified-icon">' + 
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="verified"><g clip-path="url(#clip0_1084_3803)"><path fill="#4DC4FF" d="M13.3546 1.46995C12.6544 0.614752 11.3466 0.614755 10.6465 1.46995L9.65463 2.6814C9.58665 2.76443 9.47325 2.79482 9.37286 2.7569L7.90817 2.20367C6.87422 1.81314 5.74163 2.46703 5.56286 3.55774L5.30963 5.10281C5.29227 5.20871 5.20926 5.29172 5.10335 5.30908L3.55829 5.56231C2.46759 5.74108 1.81368 6.87366 2.20422 7.90762L2.75745 9.37231C2.79537 9.4727 2.76498 9.5861 2.68195 9.65408L1.4705 10.6459C0.615302 11.3461 0.615304 12.6539 1.4705 13.3541L2.68195 14.3459C2.76498 14.4139 2.79537 14.5273 2.75745 14.6277L2.20422 16.0924C1.81369 17.1263 2.46758 18.2589 3.55829 18.4377L5.10335 18.6909C5.20926 18.7083 5.29227 18.7913 5.30963 18.8972L5.56286 20.4422C5.74163 21.5329 6.87421 22.1868 7.90817 21.7963L9.37286 21.2431C9.47325 21.2052 9.58665 21.2355 9.65463 21.3186L10.6465 22.53C11.3466 23.3852 12.6544 23.3852 13.3546 22.53L14.3464 21.3186C14.4144 21.2355 14.5278 21.2052 14.6282 21.2431L16.0929 21.7963C17.1269 22.1868 18.2595 21.5329 18.4382 20.4422L18.6915 18.8972C18.7088 18.7913 18.7918 18.7083 18.8977 18.6909L20.4428 18.4377C21.5335 18.2589 22.1874 17.1263 21.7969 16.0924L21.2436 14.6277C21.2057 14.5273 21.2361 14.4139 21.3191 14.3459L22.5306 13.3541C23.3858 12.6539 23.3858 11.3461 22.5306 10.6459L21.3191 9.65408C21.2361 9.5861 21.2057 9.4727 21.2436 9.37231L21.7969 7.90762C22.1874 6.87366 21.5335 5.74108 20.4428 5.56231L18.8977 5.30908C18.7918 5.29172 18.7088 5.20871 18.6915 5.10281L18.4382 3.55774C18.2595 2.46704 17.1269 1.81313 16.0929 2.20367L14.6282 2.7569C14.5278 2.79482 14.4144 2.76443 14.3464 2.6814L13.3546 1.46995Z"></path><path fill="#ECEFF1" fill-rule="evenodd" d="M18.0303 7.96967C18.3232 8.26256 18.3232 8.73744 18.0303 9.03033L11.0303 16.0303C10.8897 16.171 10.6989 16.25 10.5 16.25C10.3011 16.25 10.1103 16.171 9.96967 16.0303L5.96967 12.0303C5.67678 11.7374 5.67678 11.2626 5.96967 10.9697C6.26256 10.6768 6.73744 10.6768 7.03033 10.9697L10.5 14.4393L16.9697 7.96967C17.2626 7.67678 17.7374 7.67678 18.0303 7.96967Z" clip-rule="evenodd"></path></g><defs><clipPath id="clip0_1084_3803"><rect width="24" height="24" fill="#fff"></rect></clipPath></defs></svg>' : '') + '</span>';
+      // Note: the original markup here left the .verified-icon <span> unclosed
+      // (the SVG badge was concatenated in but no closing </span> for it),
+      // which is invalid HTML. Building it as its own properly-closed string
+      // fixes that and keeps the ternary readable.
+      var verifiedBadge = (c.verified && c.id !== 'koutroufinis')
+        ? ' <span class="verified-icon">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="verified"><g clip-path="url(#clip0_1084_3803)"><path fill="#4DC4FF" d="M13.3546 1.46995C12.6544 0.614752 11.3466 0.614755 10.6465 1.46995L9.65463 2.6814C9.58665 2.76443 9.47325 2.79482 9.37286 2.7569L7.90817 2.20367C6.87422 1.81314 5.74163 2.46703 5.56286 3.55774L5.30963 5.10281C5.29227 5.20871 5.20926 5.29172 5.10335 5.30908L3.55829 5.56231C2.46759 5.74108 1.81368 6.87366 2.20422 7.90762L2.75745 9.37231C2.79537 9.4727 2.76498 9.5861 2.68195 9.65408L1.4705 10.6459C0.615302 11.3461 0.615304 12.6539 1.4705 13.3541L2.68195 14.3459C2.76498 14.4139 2.79537 14.5273 2.75745 14.6277L2.20422 16.0924C1.81369 17.1263 2.46758 18.2589 3.55829 18.4377L5.10335 18.6909C5.20926 18.7083 5.29227 18.7913 5.30963 18.8972L5.56286 20.4422C5.74163 21.5329 6.87421 22.1868 7.90817 21.7963L9.37286 21.2431C9.47325 21.2052 9.58665 21.2355 9.65463 21.3186L10.6465 22.53C11.3466 23.3852 12.6544 23.3852 13.3546 22.53L14.3464 21.3186C14.4144 21.2355 14.5278 21.2052 14.6282 21.2431L16.0929 21.7963C17.1269 22.1868 18.2595 21.5329 18.4382 20.4422L18.6915 18.8972C18.7088 18.7913 18.7918 18.7083 18.8977 18.6909L20.4428 18.4377C21.5335 18.2589 22.1874 17.1263 21.7969 16.0924L21.2436 14.6277C21.2057 14.5273 21.2361 14.4139 21.3191 14.3459L22.5306 13.3541C23.3858 12.6539 23.3858 11.3461 22.5306 10.6459L21.3191 9.65408C21.2361 9.5861 21.2057 9.4727 21.2436 9.37231L21.7969 7.90762C22.1874 6.87366 21.5335 5.74108 20.4428 5.56231L18.8977 5.30908C18.7918 5.29172 18.7088 5.20871 18.6915 5.10281L18.4382 3.55774C18.2595 2.46704 17.1269 1.81313 16.0929 2.20367L14.6282 2.7569C14.5278 2.79482 14.4144 2.76443 14.3464 2.6814L13.3546 1.46995Z"></path><path fill="#ECEFF1" fill-rule="evenodd" d="M18.0303 7.96967C18.3232 8.26256 18.3232 8.73744 18.0303 9.03033L11.0303 16.0303C10.8897 16.171 10.6989 16.25 10.5 16.25C10.3011 16.25 10.1103 16.171 9.96967 16.0303L5.96967 12.0303C5.67678 11.7374 5.67678 11.2626 5.96967 10.9697C6.26256 10.6768 6.73744 10.6768 7.03033 10.9697L10.5 14.4393L16.9697 7.96967C17.2626 7.67678 17.7374 7.67678 18.0303 7.96967Z" clip-rule="evenodd"></path></g><defs><clipPath id="clip0_1084_3803"><rect width="24" height="24" fill="#fff"></rect></clipPath></defs></svg>' +
+          '</span>'
+        : '';
+      var nameHtml = '<span class="contact-name">' + escapeHtml(c.name) + verifiedBadge + '</span>';
       meta.innerHTML =
         '<div class="contact-top-row">' +
           nameHtml +
@@ -1257,7 +1564,6 @@
     renderContacts(contactSearch.value);
 
     chatHeader.hidden = false;
-    noConversation.hidden = true;
     messagesEl.hidden = false;
     composer.hidden = false;
 
@@ -1269,32 +1575,58 @@
       ? '<img src="' + escapeHtml(contact.avatarUrl) + '" alt="">'
       : initials(contact.name);
 
-    if (state.messagesByContact[contactId]) {
+    // Fetch the contact's profile once and reuse it both to populate their
+    // avatar in the contact list and (previously, redundantly) fetched a
+    // second time just for the avatar. profile.avatarBase64 is the field the
+    // /api/profile endpoint actually returns (there is no `.avatar` field),
+    // so this also fixes contact avatars never loading.
+    if (!state.messagesByContact[contactId]) {
+      loadMessages(contactId).then(function(msgs){
+        state.messagesByContact[contactId] = msgs;
+        renderMessages(contactId);
+        markRead(contactId);
+      });
+    } else {
       renderMessages(contactId);
       markRead(contactId);
-    } else {
-      loadMessages(contactId).then(function(msgs){
-        // enrich messages with avatars where possible
-        var p = fetchProfile(contactId);
-        p.then(function(profile){
-          if (profile && profile.avatar) {
-            msgs.forEach(function(m){ if (!m.avatar) m.avatar = profile.avatar; });
-          }
-          state.messagesByContact[contactId] = msgs;
-          renderMessages(contactId);
-          // Inform server we've read these messages so unread badge clears
-          markRead(contactId);
-        }).catch(function(){ state.messagesByContact[contactId] = msgs; renderMessages(contactId); markRead(contactId); });
-      });
-      // fetch profile to populate contact avatar
+    }
+
+    if (!contact.avatarUrl) {
       fetchProfile(contactId).then(function(profile){
-        if (profile && profile.avatar) {
-          var contact = state.contacts.find(function(c){ return c.id === contactId; });
-          if (contact) { contact.avatarUrl = profile.avatar; renderContacts(contactSearch.value); }
+        if (profile && profile.avatarBase64) {
+          contact.avatarUrl = profile.avatarBase64;
+          renderContacts(contactSearch.value);
+          if (state.activeContactId === contactId) {
+            chatAvatar.innerHTML = '<img src="' + escapeHtml(contact.avatarUrl) + '" alt="">';
+          }
         }
       });
     }
 
+    closeSidebarOnMobile();
+    messageInput.focus();
+  }
+
+  function openTeam(teamId){
+    state.activeContactId = teamId;
+    var team = state.teams.find(function(item){ return item.id === teamId; });
+    if (!team) return;
+
+    renderTeams();
+    chatHeader.hidden = false;
+    messagesEl.hidden = false;
+    composer.hidden = false;
+
+    chatContactName.textContent = team.name || 'Team chat';
+    chatContactStatus.textContent = (team.members || []).length + ' members';
+    chatContactStatus.classList.toggle('online', false);
+    chatAvatar.className = 'avatar';
+    chatAvatar.innerHTML = team.avatarUrl
+      ? '<img src="' + escapeHtml(team.avatarUrl) + '" alt="">'
+      : initials(team.name || 'T');
+
+    state.messagesByContact[teamId] = state.messagesByContact[teamId] || lsGetTeamMessages(teamId);
+    renderMessages(teamId);
     closeSidebarOnMobile();
     messageInput.focus();
   }
@@ -1315,6 +1647,31 @@
 
     var contactId = state.activeContactId;
     var contact = state.contacts.find(function(c){ return c.id === contactId; });
+
+    if (String(contactId).indexOf('team:') === 0) {
+      var team = state.teams.find(function(item){ return item.id === contactId; });
+      var teamMsg = {
+        id: 'team-' + Date.now(),
+        from: CURRENT_USER,
+        to: contactId,
+        text: text,
+        isoTime: new Date().toISOString()
+      };
+      state.messagesByContact[contactId] = state.messagesByContact[contactId] || lsGetTeamMessages(contactId);
+      state.messagesByContact[contactId].push(teamMsg);
+      lsSetTeamMessages(contactId, state.messagesByContact[contactId]);
+      if (team) {
+        team.lastMessage = text;
+        team.lastTime = teamMsg.isoTime;
+        saveTeams();
+        renderTeams();
+      }
+      renderMessages(contactId);
+      messageInput.value = "";
+      autoGrow(messageInput);
+      updateSendBtnState();
+      return;
+    }
 
     var tempId = "temp-" + Date.now();
     var optimisticMsg = {
@@ -1469,46 +1826,60 @@
     sidebarScrim.addEventListener("click", closeSidebar);
     backBtn.addEventListener("click", closeSidebar);
 
+    state.teams = loadTeams();
+
     // Contact search
     contactSearch.addEventListener("input", function(){ renderContacts(contactSearch.value); });
-    contactSearch.addEventListener("keydown", function(e){
-      if (e.key === 'Enter'){
-        e.preventDefault();
-        var q = contactSearch.value.trim();
-        if (!q) {
-          toast('Enter a username or @handle to search.', true);
-          return;
-        }
-        var normalized = q.charAt(0) === '@' ? q.slice(1).trim() : q;
-        if (!/^[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/.test(normalized)) {
-          toast('Invalid handle. Use letters, numbers, underscores, and periods only.', true);
-          return;
-        }
-        searchUsers(q).then(function(results){
-          if (results && results.length){
-            var user = results[0];
-            var existing = state.contacts.find(function(c){ return c.id === user.username; });
-            if (!existing){
-              var newC = { id: user.username, name: user.username, avatarUrl: '', lastMessage: '', lastTime: new Date().toISOString(), unread: 0, verified: !!user.verified };
-              state.contacts.push(newC);
-              renderContacts("");
-              openContact(newC.id);
-            } else {
-              openContact(existing.id);
-            }
-          } else {
-            toast('No user found for that handle.', true);
-          }
-        });
+
+    function performUserSearch(){
+      var q = contactSearch.value.trim();
+      if (!q) {
+        toast('Enter a username or @handle to search.', true);
+        return;
       }
-    });
+      var normalized = q.charAt(0) === '@' ? q.slice(1).trim() : q;
+      if (!/^[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/.test(normalized)) {
+        toast('Invalid handle. Use letters, numbers, underscores, and periods only.', true);
+        return;
+      }
+      searchUsers(q).then(function(results){
+        if (!results || !results.length) {
+          toast('No user found for that handle.', true);
+          return;
+        }
+        var user = results[0];
+        if (user.username === CURRENT_USER) {
+          toast('You cannot add yourself as a contact.', true);
+          return;
+        }
+        var existing = state.contacts.find(function(c){ return c.id === user.username; });
+        if (!existing) {
+          addContactByUsername(user.username).then(function(){
+            loadContacts().then(function(contacts){
+              state.contacts = contacts || [];
+              renderContacts("");
+              var added = state.contacts.find(function(c){ return c.id === user.username; });
+              if (added) openContact(added.id);
+            });
+          }).catch(function(){
+            toast('Could not add contact right now.', true);
+          });
+        } else {
+          openContact(existing.id);
+        }
+      });
+    }
+
+    contactSearch.addEventListener("keydown", function(e){ if (e.key === 'Enter') { e.preventDefault(); performUserSearch(); } });
+    findUserBtn.addEventListener("click", performUserSearch);
 
     // Composer
     composer.addEventListener("submit", handleSend);
-    messageInput.addEventListener("input", function(){ autoGrow(messageInput); updateSendBtnState(); });
-    // Send typing notifications when user types
+
+    // Auto-grow / send-button state + typing notifications are combined into
+    // a single "input" listener below (they were previously two separate
+    // listeners doing overlapping work).
     var typingTimer = null;
-    var isTyping = false;
     function sendTypingStart(){
       if (!state.activeContactId || isTyping) return;
       isTyping = true;
@@ -1517,7 +1888,9 @@
         body: JSON.stringify({ from: CURRENT_USER, to: state.activeContactId, action: 'start' })
       }).catch(function(){});
     }
-    messageInput.addEventListener('input', function(){
+    messageInput.addEventListener("input", function(){
+      autoGrow(messageInput);
+      updateSendBtnState();
       if (typingTimer) clearTimeout(typingTimer);
       sendTypingStart();
       typingTimer = setTimeout(function(){ stopTyping(); typingTimer = null; }, 2000);
@@ -1558,6 +1931,11 @@
         state.profile = Object.assign({}, updated, saved || {});
         lsSetProfile(state.profile);
         applyProfileToHeader();
+        // The pending upload has now been persisted into state.profile —
+        // clear it so a later drawer open doesn't silently resend a stale
+        // pending avatar if the user opens the drawer without picking a
+        // new photo.
+        pendingAvatarBase64 = null;
         // ensure drawer avatar initials are black when saved (no image)
         setAvatarPreview(drawerAvatarPreview, state.profile.avatarBase64, state.profile.username);
         if (!state.profile.avatarBase64) {
@@ -1572,11 +1950,7 @@
     // Logout
     logoutBtn.addEventListener("click", function(){
       logoutRequest().finally(function(){
-        try {
-          clearLocalUserState();
-          localStorage.removeItem("yapa_auth_token");
-          sessionStorage.clear();
-        } catch(e){}
+        clearAuthSession();
         toast("Logged out.");
         setTimeout(function(){ window.location.href = CONFIG.LOGIN_URL; }, 400);
       });
@@ -1626,12 +2000,16 @@
     // Load contacts, then default-select the first one on wider screens.
     loadContacts().then(function(contacts){
       state.contacts = contacts || [];
-      // fetch missing avatars for contacts
-      var toFetch = state.contacts.filter(function(c){ return !c.avatarUrl && c.id; }).map(function(c){ return fetchProfile(c.id).then(function(p){ if (p && p.avatar) c.avatarUrl = p.avatar; }).catch(function(){}); });
+      // fetch missing avatars for contacts (server returns `avatarBase64`, not `avatar`)
+      var toFetch = state.contacts.filter(function(c){ return !c.avatarUrl && c.id; }).map(function(c){ return fetchProfile(c.id).then(function(p){ if (p && p.avatarBase64) c.avatarUrl = p.avatarBase64; }).catch(function(){}); });
       Promise.all(toFetch).finally(function(){
         renderContacts("");
-        if (window.innerWidth > 780 && state.contacts.length) {
+            if (window.innerWidth > 780 && state.contacts.length) {
           openContact(state.contacts[0].id);
+        } else {
+          messagesEl.hidden = false;
+          composer.hidden = false;
+          messagesEl.innerHTML = "";
         }
       });
     });
@@ -1639,13 +2017,20 @@
     // Poll for updates (contacts + messages for active conversation)
     setInterval(function(){
       loadContacts().then(function(contacts){ state.contacts = contacts || []; renderContacts(contactSearch.value); });
+      renderTeams();
       if (state.activeContactId) {
-        loadMessages(state.activeContactId).then(function(msgs){ state.messagesByContact[state.activeContactId] = msgs || []; renderMessages(state.activeContactId); markRead(state.activeContactId); });
-        // check typing status
-        fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.typing) + '?username=' + encodeURIComponent(CURRENT_USER) + '&contactId=' + encodeURIComponent(state.activeContactId))
-          .then(function(res){ if (!res.ok) throw new Error('bad'); return res.json(); })
-          .then(function(t){ if (t && t.typing) showTyping(t.who); else showTyping(false); })
-          .catch(function(){ showTyping(false); });
+        if (String(state.activeContactId).indexOf('team:') === 0) {
+          var teamMsgs = lsGetTeamMessages(state.activeContactId);
+          state.messagesByContact[state.activeContactId] = teamMsgs;
+          renderMessages(state.activeContactId);
+        } else {
+          loadMessages(state.activeContactId).then(function(msgs){ state.messagesByContact[state.activeContactId] = msgs || []; renderMessages(state.activeContactId); markRead(state.activeContactId); });
+          // check typing status
+          fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.typing) + '?username=' + encodeURIComponent(CURRENT_USER) + '&contactId=' + encodeURIComponent(state.activeContactId))
+            .then(function(res){ if (!res.ok) throw new Error('bad'); return res.json(); })
+            .then(function(t){ if (t && t.typing) showTyping(t.who); else showTyping(false); })
+            .catch(function(){ showTyping(false); });
+        }
       }
     }, CONFIG.POLL_INTERVAL_MS);
   }
@@ -1662,3 +2047,4 @@
 
 </body>
 </html>
+

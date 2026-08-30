@@ -372,7 +372,7 @@
         <div class="mini-chat-head">
           <div class="avatar"></div>
           <div>
-            <div class="name">Maya</div>
+            <div class="name">User</div>
             <div class="status">online</div>
           </div>
         </div>
@@ -413,7 +413,7 @@
             <label class="checkbox-row">
               <input type="checkbox"> Stay signed in
             </label>
-            <a href="#">Forgot password?</a>
+            <a href="#" id="forgotPasswordLink">Forgot password?</a>
           </div>
 
           <button type="submit" class="submit-btn">Log in</button>
@@ -462,6 +462,33 @@
     </div>
   </div>
 
+</div>
+
+<div id="forgotPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div style="width:min(420px,100%); background:#111110; border:1px solid #232320; border-radius:16px; padding:22px 20px; box-shadow:0 24px 60px rgba(0,0,0,0.55);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="font-size:20px; letter-spacing:-0.02em; margin:0; font-weight:700;">Reset password</h3>
+      <button type="button" id="closeForgotPassword" style="background:none; border:none; color:#faf9f4; font-size:22px; cursor:pointer; line-height:1;">×</button>
+    </div>
+    <form id="forgotPasswordForm" novalidate>
+      <div class="field-group" id="forgotUserGroup" style="margin-bottom:12px;">
+        <label for="forgotUser">Username</label>
+        <input type="text" id="forgotUser" placeholder="your-username" autocomplete="username" required>
+        <span class="error-msg">Enter your username.</span>
+      </div>
+      <div class="field-group" id="forgotEmailGroup" style="margin-bottom:12px;">
+        <label for="forgotEmail">Email (optional)</label>
+        <input type="email" id="forgotEmail" placeholder="you@example.com" autocomplete="email">
+        <span class="error-msg">Enter a valid email address.</span>
+      </div>
+      <div class="field-group" id="forgotPassGroup" style="margin-bottom:12px;">
+        <label for="forgotPass">New password</label>
+        <input type="password" id="forgotPass" placeholder="At least 8 characters" autocomplete="new-password" required>
+        <span class="error-msg">Enter a valid password.</span>
+      </div>
+      <button type="submit" class="submit-btn" style="margin-top:8px; width:100%;">Reset password</button>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -551,6 +578,17 @@
       } catch (e) {}
     }
 
+    function storeAuthSession(username, token) {
+      try {
+        if (username) sessionStorage.setItem('yapa_username', username);
+        if (token) localStorage.setItem('yapa_auth_token', token);
+      } catch (e) {}
+    }
+
+    function getAuthToken() {
+      try { return localStorage.getItem('yapa_auth_token') || ''; } catch (e) { return ''; }
+    }
+
     function setButtonLoading(button, isLoading, label) {
       if (!button) return;
       button.disabled = isLoading;
@@ -584,7 +622,7 @@
       }).then(function(result){
         if (result.status >= 200 && result.status < 300 && result.data && result.data.success) {
           clearLocalUserState();
-          try { sessionStorage.setItem('yapa_username', result.data.username || normalizeHandle(userInput.value)); } catch (e) {}
+          storeAuthSession(result.data.username || normalizeHandle(userInput.value), result.data.token || '');
           window.location.href = '/chat.html';
           return;
         }
@@ -635,7 +673,7 @@
       }).then(function(result){
         if (result.status >= 200 && result.status < 300 && result.data && result.data.success) {
           clearLocalUserState();
-          try { sessionStorage.setItem('yapa_username', result.data.username || normalizeHandle(userInput.value)); } catch (e) {}
+          storeAuthSession(result.data.username || normalizeHandle(userInput.value), result.data.token || '');
           window.location.href = '/chat.html';
           return;
         }
@@ -654,8 +692,76 @@
       });
     }
 
+    function submitForgotPassword(e) {
+      e.preventDefault();
+      var form = document.getElementById('forgotPasswordForm');
+      clearFormErrors('forgotPasswordForm');
+      var username = document.getElementById('forgotUser').value;
+      var email = document.getElementById('forgotEmail').value;
+      var password = document.getElementById('forgotPass').value;
+
+      var usernameError = validateHandle(username, 'Username');
+      var emailError = email && !/^\S+@\S+\.\S+$/.test(email.trim()) ? 'Please enter a valid email address.' : '';
+      var passError = !password ? 'Password is required.' : (password.length < 8 ? 'Password must be at least 8 characters.' : '');
+
+      if (usernameError) setFormError('forgotUserGroup', usernameError, true);
+      if (emailError) setFormError('forgotEmailGroup', emailError, true);
+      if (passError) setFormError('forgotPassGroup', passError, true);
+      if (usernameError || emailError || passError) return;
+
+      var button = form.querySelector('.submit-btn');
+      setButtonLoading(button, true, 'Resetting...');
+      fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, email: email, newPassword: password })
+      }).then(function(res){ return res.json().then(function(data){ return { status: res.status, data: data }; }); })
+        .then(function(result){
+          if (result.status >= 200 && result.status < 300 && result.data && result.data.success) {
+            alert('Password updated successfully. You can now log in with your new password.');
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+            showLogin();
+            return;
+          }
+          var message = result && result.data && result.data.message ? result.data.message : 'Password reset failed.';
+          setFormError('forgotPassGroup', message, true);
+        })
+        .catch(function(){ setFormError('forgotPassGroup', 'Network error. Please try again.', true); })
+        .finally(function(){ setButtonLoading(button, false, 'Reset password'); });
+    }
+
+    document.getElementById('forgotPasswordLink').addEventListener('click', function(e){
+      e.preventDefault();
+      document.getElementById('forgotPasswordModal').style.display = 'flex';
+    });
+    document.getElementById('closeForgotPassword').addEventListener('click', function(){
+      document.getElementById('forgotPasswordModal').style.display = 'none';
+    });
+    document.getElementById('forgotPasswordForm').addEventListener('submit', submitForgotPassword);
+
     loginForm.addEventListener('submit', submitLogin);
     signupForm.addEventListener('submit', submitSignup);
+
+    try {
+      var token = getAuthToken();
+      if (token) {
+        fetch('/api/remember', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        }).then(function(res){ return res.json(); }).then(function(data){
+          if (data && data.success && data.username) {
+            storeAuthSession(data.username, token);
+            window.location.href = '/chat.html';
+          }
+        }).catch(function(){});
+      } else {
+        fetch('/api/remember').then(function(res){ return res.json(); }).then(function(data){
+          if (data && data.success && data.username) {
+            storeAuthSession(data.username, getAuthToken());
+            window.location.href = '/chat.html';
+          }
+        }).catch(function(){});
+      }
+    } catch (e) {}
   })();
 </script>
 

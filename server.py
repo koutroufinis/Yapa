@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import secrets
 import uuid
 from datetime import datetime
 
@@ -30,7 +31,7 @@ def is_valid_handle(value):
 
 def load_data():
     if not os.path.exists(DATA_PATH):
-        return {'users': {}, 'contacts': {}, 'messages': {}}
+        return {'users': {}, 'contacts': {}, 'messages': {}, 'sessions': {}, 'ipBindings': {}}
     with open(DATA_PATH, 'r', encoding='utf-8') as f:
         try:
             data = json.load(f)
@@ -42,6 +43,7 @@ def load_data():
     data.setdefault('contacts', {})
     data.setdefault('messages', {})
     data.setdefault('typing', {})
+    data.setdefault('sessions', {})
     data.setdefault('ipBindings', {})
 
     normalized_users = {}
@@ -82,6 +84,7 @@ def load_data():
             data['users']['koutroufinis'].setdefault('verified', True)
         except Exception:
             pass
+    data['sessions'] = {str(token): info for token, info in (data.get('sessions', {}) or {}).items() if isinstance(info, dict)}
     return data
 
 
@@ -111,6 +114,39 @@ def tester_page():
 @app.route('/chat.html', methods=['GET'])
 def chat_page():
     return send_from_directory('site', 'chat.html')
+
+
+def create_session(data, username, ip_address=None):
+    token = secrets.token_urlsafe(32)
+    data.setdefault('sessions', {})[token] = {
+        'username': username,
+        'ipAddress': ip_address or request.remote_addr,
+        'createdAt': datetime.utcnow().isoformat() + 'Z',
+        'lastSeen': datetime.utcnow().isoformat() + 'Z',
+    }
+    if ip_address:
+        data.setdefault('ipBindings', {})[ip_address] = username
+    return token
+
+
+def resolve_session_username():
+    data = load_data()
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ', 1)[1].strip()
+        session = data.get('sessions', {}).get(token)
+        if isinstance(session, dict):
+            username = normalize_handle(session.get('username'))
+            if username in data.get('users', {}):
+                return username
+    try:
+        ip = request.remote_addr
+        username = data.get('ipBindings', {}).get(ip)
+        if username and normalize_handle(username) in data.get('users', {}):
+            return normalize_handle(username)
+    except Exception:
+        pass
+    return None
 
 
 @app.route('/api/signup', methods=['POST'])
@@ -143,13 +179,9 @@ def api_signup():
     }
     users[normalized] = user_record
     data['contacts'].setdefault(normalized, [])
-    try:
-        ip = request.remote_addr
-        data.setdefault('ipBindings', {})[ip] = normalized
-    except Exception:
-        pass
+    token = create_session(data, normalized, request.remote_addr)
     save_data(data)
-    return jsonify({'success': True, 'message': 'Account created successfully.', 'username': normalized})
+    return jsonify({'success': True, 'message': 'Account created successfully.', 'username': normalized, 'token': token})
 
 
 @app.route('/api/login', methods=['POST'])
@@ -172,13 +204,9 @@ def api_login():
         return jsonify({'success': False, 'message': 'Incorrect username or password.'}), 401
 
     user['lastSeen'] = datetime.utcnow().isoformat() + 'Z'
-    try:
-        ip = request.remote_addr
-        data.setdefault('ipBindings', {})[ip] = normalized
-    except Exception:
-        pass
+    token = create_session(data, normalized, request.remote_addr)
     save_data(data)
-    return jsonify({'success': True, 'message': 'Logged in', 'username': normalized, 'email': user.get('email', '')})
+    return jsonify({'success': True, 'message': 'Logged in', 'username': normalized, 'email': user.get('email', ''), 'token': token})
 
 
 def conv_key(a, b):
@@ -219,14 +247,9 @@ def api_contacts():
 
 @app.route('/api/remember', methods=['GET'])
 def api_remember():
-    data = load_data()
-    try:
-        ip = request.remote_addr
-        username = data.get('ipBindings', {}).get(ip)
-        if username:
-            return jsonify({'success': True, 'username': username})
-    except Exception:
-        pass
+    username = resolve_session_username()
+    if username:
+        return jsonify({'success': True, 'username': username})
     return jsonify({'success': True, 'username': None})
 
 
@@ -274,6 +297,7 @@ def api_messages():
 def api_users_search():
     raw_q = request.args.get('q', '')
     q = normalize_handle(raw_q)
+    current_user = normalize_handle(request.args.get('currentUser'))
     data = load_data()
     users = data.get('users', {})
 
@@ -282,12 +306,17 @@ def api_users_search():
     if not is_valid_handle(q):
         return jsonify({'success': False, 'message': 'Invalid handle. Use letters, numbers, underscores, and periods only.'}), 400
 
-    user = users.get(q)
-    if not user:
+    matches = []
+    for username, info in users.items():
+        if current_user and username == current_user:
+            continue
+        if username == q:
+            matches.append({'username': username, 'verified': bool(info.get('verified', False))})
+
+    if not matches:
         return jsonify({'success': True, 'users': [], 'message': 'No user found.'})
 
-    result = [{'username': q, 'verified': bool(user.get('verified', False))}]
-    return jsonify({'success': True, 'users': result})
+    return jsonify({'success': True, 'users': matches[:10]})
 
 
 @app.route('/api/profile', methods=['POST'])
@@ -320,6 +349,92 @@ def api_profile_get():
     if not user:
         return jsonify({'success': False, 'message': 'Unknown user'}), 404
     return jsonify({'success': True, 'user': {'username': username, 'email': user.get('email', ''), 'avatar': user.get('avatar', ''), 'verified': user.get('verified', False)}})
+
+
+@app.route('/api/contacts/add', methods=['POST'])
+def api_contacts_add():
+    payload = request.get_json() or {}
+    username = normalize_handle(payload.get('username'))
+    contact = normalize_handle(payload.get('contact'))
+    if not username or not contact:
+        return jsonify({'success': False, 'message': 'Missing user or contact'}), 400
+    if username == contact:
+        return jsonify({'success': False, 'message': 'You cannot add yourself as a contact.'}), 400
+    data = load_data()
+    users = data.get('users', {})
+    if contact not in users:
+        return jsonify({'success': False, 'message': 'User not found.'}), 404
+    username_list = data['contacts'].setdefault(username, [])
+    if not any(normalize_handle(item.get('id')) == contact for item in username_list):
+        username_list.append({
+            'id': contact,
+            'name': contact,
+            'avatarUrl': users.get(contact, {}).get('avatar', ''),
+            'lastMessage': '',
+            'lastTime': datetime.utcnow().isoformat() + 'Z',
+            'unread': 0,
+            'verified': bool(users.get(contact, {}).get('verified', False))
+        })
+    other_list = data['contacts'].setdefault(contact, [])
+    if not any(normalize_handle(item.get('id')) == username for item in other_list):
+        other_list.append({
+            'id': username,
+            'name': username,
+            'avatarUrl': users.get(username, {}).get('avatar', ''),
+            'lastMessage': '',
+            'lastTime': datetime.utcnow().isoformat() + 'Z',
+            'unread': 0,
+            'verified': bool(users.get(username, {}).get('verified', False))
+        })
+    save_data(data)
+    return jsonify({'success': True, 'contact': contact})
+
+
+@app.route('/api/contacts/remove', methods=['POST'])
+def api_contacts_remove():
+    payload = request.get_json() or {}
+    username = normalize_handle(payload.get('username'))
+    contact = normalize_handle(payload.get('contact'))
+    if not username or not contact:
+        return jsonify({'success': False, 'message': 'Missing user or contact'}), 400
+    data = load_data()
+    if username in data.get('contacts', {}):
+        data['contacts'][username] = [
+            item for item in data['contacts'].get(username, [])
+            if normalize_handle(item.get('id')) != contact
+        ]
+    if contact in data.get('contacts', {}):
+        data['contacts'][contact] = [
+            item for item in data['contacts'].get(contact, [])
+            if normalize_handle(item.get('id')) != username
+        ]
+    save_data(data)
+    return jsonify({'success': True})
+
+
+@app.route('/api/forgot-password', methods=['POST'])
+def api_forgot_password():
+    payload = request.get_json() or {}
+    username = normalize_handle(payload.get('username', ''))
+    email = (payload.get('email', '') or '').strip().lower()
+    new_password = payload.get('newPassword') or payload.get('password')
+
+    if not username:
+        return jsonify({'success': False, 'message': 'Username is required.'}), 400
+    if not new_password or len(str(new_password)) < 8:
+        return jsonify({'success': False, 'message': 'New password must be at least 8 characters long.'}), 400
+
+    data = load_data()
+    user = data.get('users', {}).get(username)
+    if not user:
+        return jsonify({'success': False, 'message': 'No account matches that username.'}), 404
+    if email and user.get('email') and user.get('email', '').lower() != email:
+        return jsonify({'success': False, 'message': 'The email address does not match this account.'}), 400
+
+    user['password'] = generate_password_hash(str(new_password))
+    user['lastSeen'] = datetime.utcnow().isoformat() + 'Z'
+    save_data(data)
+    return jsonify({'success': True, 'message': 'Password updated successfully.'})
 
 
 @app.route('/api/typing', methods=['POST', 'GET'])
@@ -395,6 +510,21 @@ def api_profile_delete():
 
 @app.route('/api/logout', methods=['POST'])
 def api_logout():
+    payload = request.get_json(silent=True) or {}
+    token = payload.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '', 1).strip()
+    username = normalize_handle(payload.get('username'))
+    data = load_data()
+    if token:
+        data.get('sessions', {}).pop(token, None)
+    if username:
+        for session_token, session in list((data.get('sessions', {}) or {}).items()):
+            if isinstance(session, dict) and normalize_handle(session.get('username')) == username:
+                data['sessions'].pop(session_token, None)
+        if 'ipBindings' in data:
+            for ip, bound_username in list(data['ipBindings'].items()):
+                if normalize_handle(bound_username) == username:
+                    data['ipBindings'].pop(ip, None)
+    save_data(data)
     return jsonify({'success': True})
 
 

@@ -62,6 +62,51 @@ class AuthFlowTests(unittest.TestCase):
         })
         self.assertEqual(login.status_code, 200, login.get_data(as_text=True))
 
+    def test_forgot_password_updates_password_and_keeps_login_working(self):
+        response = self.client.post('/api/signup', json={
+            'username': 'resetuser',
+            'email': 'reset@example.com',
+            'password': 'OldPassword123'
+        })
+        self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+
+        reset = self.client.post('/api/forgot-password', json={
+            'username': 'resetuser',
+            'email': 'reset@example.com',
+            'newPassword': 'NewPassword456'
+        })
+        self.assertEqual(reset.status_code, 200, reset.get_data(as_text=True))
+
+        old_login = self.client.post('/api/login', json={
+            'username': 'resetuser',
+            'password': 'OldPassword123'
+        })
+        self.assertEqual(old_login.status_code, 401)
+
+        new_login = self.client.post('/api/login', json={
+            'username': 'resetuser',
+            'password': 'NewPassword456'
+        })
+        self.assertEqual(new_login.status_code, 200, new_login.get_data(as_text=True))
+
+    def test_remember_session_uses_token_and_ip_fallback(self):
+        signup = self.client.post('/api/signup', json={
+            'username': 'sessionuser',
+            'password': 'Password123'
+        })
+        self.assertEqual(signup.status_code, 200, signup.get_data(as_text=True))
+
+        login = self.client.post('/api/login', json={
+            'username': 'sessionuser',
+            'password': 'Password123'
+        })
+        payload = login.get_json()
+        self.assertIn('token', payload)
+
+        remember = self.client.get('/api/remember', headers={'Authorization': 'Bearer ' + payload['token']})
+        self.assertEqual(remember.status_code, 200, remember.get_data(as_text=True))
+        self.assertEqual(remember.get_json()['username'], 'sessionuser')
+
 
 if __name__ == '__main__':
     unittest.main()
