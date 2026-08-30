@@ -35,7 +35,7 @@
 <head>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Yapa — Chat</title>
+<title>Yapa</title>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000'/%3E%3Cpath d='M28 24 L50 50 L72 24' stroke='%23fff' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M50 50 L50 78' stroke='%23fff' stroke-width='9' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 
@@ -732,7 +732,7 @@
           <input type="text" id="displayNameInput" autocomplete="name">
         </div>
 
-        <button type="submit" class="save-btn" style="margin-top:16px; width:100%;">Save changes</button>
+        <button type="submit" class="save-btn" style="margin-top:16px; width:100%; color: black;">Save changes</button>
       </form>
 
       <div class="drawer-divider"></div>
@@ -924,12 +924,39 @@
   }
   function lsSetMessages(contactId, msgs){ localStorage.setItem(LS_KEYS.messages(contactId), JSON.stringify(msgs)); }
 
+  function clearLocalUserState(){
+    try {
+      Object.keys(localStorage).forEach(function(key){
+        if (key.indexOf('yapa_') === 0) localStorage.removeItem(key);
+      });
+    } catch (e) {}
+  }
+
   function lsGetProfile(){
     var raw = localStorage.getItem(LS_KEYS.profile);
-    if (raw) { try { return JSON.parse(raw); } catch(e){} }
-    var p = { username: CURRENT_USER || "", email: "", avatarBase64: "" };
-    localStorage.setItem(LS_KEYS.profile, JSON.stringify(p));
-    return p;
+    var fallback = { username: CURRENT_USER || "", email: "", avatarBase64: "" };
+    if (raw) {
+      try {
+        var stored = JSON.parse(raw);
+        if (stored && typeof stored === 'object') {
+          var currentUsername = CURRENT_USER || stored.username || "";
+          var profile = {
+            username: currentUsername,
+            email: stored.email || "",
+            avatarBase64: stored.avatarBase64 || stored.avatar || ""
+          };
+          if (stored.username && CURRENT_USER && stored.username !== CURRENT_USER) {
+            profile.username = CURRENT_USER;
+            profile.email = "";
+            profile.avatarBase64 = "";
+          }
+          localStorage.setItem(LS_KEYS.profile, JSON.stringify(profile));
+          return profile;
+        }
+      } catch(e){}
+    }
+    localStorage.setItem(LS_KEYS.profile, JSON.stringify(fallback));
+    return fallback;
   }
   function lsSetProfile(profile){ localStorage.setItem(LS_KEYS.profile, JSON.stringify(profile)); }
 
@@ -957,7 +984,16 @@
   function fetchProfile(username){
     return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.profile) + "?username=" + encodeURIComponent(username))
       .then(function(res){ if (!res.ok) throw new Error('bad'); return res.json(); })
-      .then(function(data){ if (data && data.user) return data.user; throw new Error('bad'); })
+      .then(function(data){
+        if (data && data.user) {
+          return {
+            username: data.user.username || username,
+            email: data.user.email || "",
+            avatarBase64: data.user.avatarBase64 || data.user.avatar || ""
+          };
+        }
+        throw new Error('bad');
+      })
       .catch(function(){ return null; });
   }
 
@@ -1037,7 +1073,11 @@
   }
 
   function deleteAccountRequest(){
-    return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.profileDelete), { method: "POST" })
+    return fetchWithTimeout(apiUrl(CONFIG.ENDPOINTS.profileDelete), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: CURRENT_USER })
+    })
       .then(function(res){ return res.ok; })
       .catch(function(){ return false; });
   }
@@ -1435,7 +1475,15 @@
       if (e.key === 'Enter'){
         e.preventDefault();
         var q = contactSearch.value.trim();
-        if (!q) return;
+        if (!q) {
+          toast('Enter a username or @handle to search.', true);
+          return;
+        }
+        var normalized = q.charAt(0) === '@' ? q.slice(1).trim() : q;
+        if (!/^[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/.test(normalized)) {
+          toast('Invalid handle. Use letters, numbers, underscores, and periods only.', true);
+          return;
+        }
         searchUsers(q).then(function(results){
           if (results && results.length){
             var user = results[0];
@@ -1449,7 +1497,7 @@
               openContact(existing.id);
             }
           } else {
-            toast('No users found');
+            toast('No user found for that handle.', true);
           }
         });
       }
@@ -1525,6 +1573,7 @@
     logoutBtn.addEventListener("click", function(){
       logoutRequest().finally(function(){
         try {
+          clearLocalUserState();
           localStorage.removeItem("yapa_auth_token");
           sessionStorage.clear();
         } catch(e){}
@@ -1560,9 +1609,19 @@
       if (e.key === "Escape" && confirmModal.classList.contains("show")) closeConfirm(false);
     });
 
-    // Load profile
-    state.profile = lsGetProfile();
-    applyProfileToHeader();
+    // Load the current user's profile from the server if available, otherwise fall back to local storage.
+    fetchProfile(CURRENT_USER).then(function(profile){
+      if (profile) {
+        state.profile = profile;
+        lsSetProfile(profile);
+      } else {
+        state.profile = lsGetProfile();
+      }
+      applyProfileToHeader();
+    }).catch(function(){
+      state.profile = lsGetProfile();
+      applyProfileToHeader();
+    });
 
     // Load contacts, then default-select the first one on wider screens.
     loadContacts().then(function(contacts){

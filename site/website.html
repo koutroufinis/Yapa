@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Yapa</title>
 
 <!-- Favicon: black rounded square, white Y -->
@@ -29,6 +29,11 @@
   * { margin:0; padding:0; box-sizing:border-box; }
 
   html { scroll-behavior: smooth; }
+
+  html, body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
 
   body{
     font-family: 'Inter', Arial, sans-serif;
@@ -181,6 +186,7 @@
     font-weight: 600;
     font-size: 15px;
     transition: 0.22s;
+    min-height: 48px;
   }
 
   .button-primary{ background: var(--fg); color: #000; }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Yapa</title>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000'/%3E%3Cpath d='M28 24 L50 50 L72 24' stroke='%23fff' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M50 50 L50 78' stroke='%23fff' stroke-width='9' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
@@ -27,6 +27,13 @@
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
 
   body{
     font-family: 'Inter', Arial, sans-serif;
@@ -200,15 +207,26 @@
     font-family: 'IBM Plex Mono', monospace;
     letter-spacing: 0.02em;
   }
+  .field-group input,
+  .field-group select,
+  .field-group textarea,
+  .submit-btn,
+  .oauth-btn,
+  .tab,
+  .switch-line button {
+    font-size: 16px;
+  }
+
   .field-group input{
     background: var(--bg-field);
     border: 1px solid var(--border);
     border-radius: 9px;
     padding: 13px 14px;
     color: var(--fg);
-    font-size: 14.5px;
+    font-size: 16px;
     font-family: 'Inter', sans-serif;
     transition: border-color 0.2s;
+    max-width: 100%;
   }
   .field-group input::placeholder{ color: var(--fg-faint); }
   .field-group input:focus{ border-color: #4a4a44; outline: none; }
@@ -455,6 +473,33 @@
     var loginForm = document.getElementById('loginForm');
     var signupForm = document.getElementById('signupForm');
     var switchLine = document.getElementById('switchLine');
+    var switchButton = document.getElementById('switchToSignup');
+
+    function normalizeHandle(value) {
+      if (value == null) return '';
+      value = String(value).trim();
+      if (value.charAt(0) === '@') value = value.slice(1);
+      return value.trim().toLowerCase();
+    }
+
+    function setFormError(groupId, message, visible) {
+      var group = document.getElementById(groupId);
+      if (!group) return;
+      var error = group.querySelector('.error-msg');
+      if (!error) return;
+      group.classList.toggle('error', visible);
+      error.textContent = message || 'This field is invalid.';
+      error.classList.toggle('show', visible);
+    }
+
+    function clearFormErrors(formId) {
+      Array.prototype.forEach.call(document.querySelectorAll('#' + formId + ' .error-msg'), function(msg){
+        msg.classList.remove('show');
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('#' + formId + ' .field-group'), function(group){
+        group.classList.remove('error');
+      });
+    }
 
     function showLogin(){
       tabLogin.classList.add('active'); tabLogin.setAttribute('aria-selected','true');
@@ -476,9 +521,10 @@
 
     tabLogin.addEventListener('click', showLogin);
     tabSignup.addEventListener('click', showSignup);
-    document.getElementById('switchToSignup').addEventListener('click', showSignup);
+    if (switchButton) {
+      switchButton.addEventListener('click', showSignup);
+    }
 
-    // Try to pre-fill username by IP-bound remembered account
     try {
       fetch('/api/remember').then(function(res){ return res.json(); }).then(function(data){
         if (data && data.success && data.username) {
@@ -486,69 +532,130 @@
           document.getElementById('loginPass').focus();
         }
       }).catch(function(){});
-    } catch(e){}
+    } catch (e) {}
 
-    function validateField(input, group){
-      var valid = input.checkValidity();
-      group.classList.toggle('error', !valid);
-      return valid;
+    function validateHandle(value, fieldName) {
+      var handle = normalizeHandle(value);
+      if (!handle) return fieldName + ' is required.';
+      if (!/^[a-z0-9](?:[a-z0-9._]*[a-z0-9])?$/.test(handle)) {
+        return 'Use letters, numbers, underscores, and periods only.';
+      }
+      return '';
     }
 
-    loginForm.addEventListener('submit', function(e){
+    function clearLocalUserState() {
+      try {
+        Object.keys(localStorage).forEach(function(key){
+          if (key.indexOf('yapa_') === 0) localStorage.removeItem(key);
+        });
+      } catch (e) {}
+    }
+
+    function setButtonLoading(button, isLoading, label) {
+      if (!button) return;
+      button.disabled = isLoading;
+      button.dataset.originalText = button.dataset.originalText || button.textContent;
+      button.textContent = isLoading ? label : button.dataset.originalText;
+    }
+
+    function submitLogin(e) {
       e.preventDefault();
+      clearFormErrors('loginForm');
       var userInput = document.getElementById('loginUser');
       var passInput = document.getElementById('loginPass');
-      var okUser = validateField(userInput, document.getElementById('loginUserGroup'));
-      var okPass = validateField(passInput, document.getElementById('loginPassGroup'));
-      var msgs = document.querySelectorAll('#loginForm .error-msg');
-      msgs[0].classList.toggle('show', !okUser);
-      msgs[1].classList.toggle('show', !okPass);
-      if (okUser && okPass) {
-        fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: userInput.value, password: passInput.value })
-        }).then(function(res){ return res.json(); })
-        .then(function(data){
-            if (data && data.success) {
-            try { sessionStorage.setItem('yapa_username', data.username || userInput.value); } catch(e){}
-            window.location.href = '/chat.html';
-          } else {
-            alert((data && data.message) || 'Login failed');
-          }
-        }).catch(function(){ alert('Network error'); });
-      }
-    });
+      var loginButton = loginForm.querySelector('.submit-btn');
+      var userError = validateHandle(userInput.value, 'Username');
+      var passError = !passInput.value ? 'Password is required.' : '';
 
-    signupForm.addEventListener('submit', function(e){
+      if (userError) setFormError('loginUserGroup', userError, true);
+      if (passError) setFormError('loginPassGroup', passError, true);
+
+      if (userError || passError) return;
+
+      setButtonLoading(loginButton, true, 'Logging in...');
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: userInput.value, password: passInput.value })
+      }).then(function(res){
+        return res.json().then(function(data){
+          return { status: res.status, data: data };
+        });
+      }).then(function(result){
+        if (result.status >= 200 && result.status < 300 && result.data && result.data.success) {
+          clearLocalUserState();
+          try { sessionStorage.setItem('yapa_username', result.data.username || normalizeHandle(userInput.value)); } catch (e) {}
+          window.location.href = '/chat.html';
+          return;
+        }
+        var message = result && result.data && result.data.message ? result.data.message : 'Login failed.';
+        setFormError('loginUserGroup', message, true);
+        setFormError('loginPassGroup', message, true);
+      }).catch(function(){
+        setFormError('loginPassGroup', 'Network error. Please try again.', true);
+      }).finally(function(){
+        setButtonLoading(loginButton, false, 'Log in');
+      });
+    }
+
+    function submitSignup(e) {
       e.preventDefault();
+      clearFormErrors('signupForm');
       var emailInput = document.getElementById('signupEmail');
       var userInput = document.getElementById('signupUser');
       var passInput = document.getElementById('signupPass');
-      var okEmail = true;
-      if (emailInput.value) okEmail = validateField(emailInput, document.getElementById('signupEmailGroup'));
-      var okUser = validateField(userInput, document.getElementById('signupUserGroup'));
-      var okPass = validateField(passInput, document.getElementById('signupPassGroup'));
-      var msgs = document.querySelectorAll('#signupForm .error-msg');
-      msgs[0].classList.toggle('show', !okEmail && emailInput.value);
-      msgs[1].classList.toggle('show', !okUser);
-      msgs[2].classList.toggle('show', !okPass);
-      if (okUser && okPass && okEmail) {
-        fetch('/api/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailInput.value, username: userInput.value, password: passInput.value })
-        }).then(function(res){ return res.json(); })
-        .then(function(data){
-          if (data && data.success) {
-            try { sessionStorage.setItem('yapa_username', data.username || userInput.value); } catch(e){}
-            window.location.href = '/chat.html';
-          } else {
-            alert((data && data.message) || 'Signup failed');
-          }
-        }).catch(function(){ alert('Network error'); });
+      var signupButton = signupForm.querySelector('.submit-btn');
+
+      var emailError = '';
+      if (emailInput.value && !/^\S+@\S+\.\S+$/.test(emailInput.value.trim())) {
+        emailError = 'Please enter a valid email address.';
       }
-    });
+      var userError = validateHandle(userInput.value, 'Username');
+      var passError = !passInput.value ? 'Password is required.' : (passInput.value.length < 8 ? 'Password must be at least 8 characters.' : '');
+
+      if (emailError) setFormError('signupEmailGroup', emailError, true);
+      if (userError) setFormError('signupUserGroup', userError, true);
+      if (passError) setFormError('signupPassGroup', passError, true);
+
+      if (emailError || userError || passError) return;
+
+      setButtonLoading(signupButton, true, 'Creating account...');
+      fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailInput.value,
+          username: userInput.value,
+          password: passInput.value
+        })
+      }).then(function(res){
+        return res.json().then(function(data){
+          return { status: res.status, data: data };
+        });
+      }).then(function(result){
+        if (result.status >= 200 && result.status < 300 && result.data && result.data.success) {
+          clearLocalUserState();
+          try { sessionStorage.setItem('yapa_username', result.data.username || normalizeHandle(userInput.value)); } catch (e) {}
+          window.location.href = '/chat.html';
+          return;
+        }
+        var message = result && result.data && result.data.message ? result.data.message : 'Signup failed.';
+        if (message.toLowerCase().indexOf('password') !== -1) {
+          setFormError('signupPassGroup', message, true);
+        } else if (message.toLowerCase().indexOf('email') !== -1) {
+          setFormError('signupEmailGroup', message, true);
+        } else {
+          setFormError('signupUserGroup', message, true);
+        }
+      }).catch(function(){
+        setFormError('signupUserGroup', 'Network error. Please try again.', true);
+      }).finally(function(){
+        setButtonLoading(signupButton, false, 'Create account');
+      });
+    }
+
+    loginForm.addEventListener('submit', submitLogin);
+    signupForm.addEventListener('submit', submitSignup);
   })();
 </script>
 
